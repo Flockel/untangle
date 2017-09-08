@@ -39,18 +39,33 @@ class Line {
     return (this.a == other.a && this.b == other.b)
         || (this.a == other.b && this.b == other.a);
   }
+  public boolean crosses(Line other) {
+    float x1 = this.a.position.x;
+    float x2 = this.b.position.x;
+    float x3 = other.a.position.x;
+    float x4 = other.b.position.x;
+    float y1 = this.a.position.y;
+    float y2 = this.b.position.y;
+    float y3 = other.a.position.y;
+    float y4 = other.b.position.y;
+    float t1 = ((x1-x3)/(x4-x3) - (y1-y3)/(y4-y3)) / ((y2-y1)/(y4-y3) - (x2-x1)/(x4-x3));
+    float t2 = ((y3-y1)/(y2-y1) - (x3-x1)/(x2-x1)) / ((x4-x3)/(x2-x1) - (y4-y3)/(y2-y1));
+    
+    return t1 > 0 && t1 < 1f && t2 > 0 && t2 < 1f;
+  }
 }
 
 ArrayList<Circle> circles = new ArrayList<Circle>();
 Point hoverPoint = null;
 Point selectedPoint = null;
+HashMap<Line, Object> conflictLines = new HashMap<Line, Object>();
 
 void setup() {
   size(1000, 1000, P2D);
   smooth(8);
   
   ArrayList<Point> allPoints = new ArrayList<Point>();
-  while (allPoints.size() < 20) {
+  while (allPoints.size() < 30) {
     PVector newVec = new PVector(random(800)+100, random(800)+100);
     for (Point point : allPoints) {
       if (newVec.dist(point.position) < 100) {
@@ -63,7 +78,7 @@ void setup() {
     }
   }
   while (!allPoints.isEmpty()) {
-    int circleSize = (int) (random(4) + 3);
+    int circleSize = (int) (random(5) + 3);
     if (circleSize > allPoints.size() - 4) {
       circleSize = allPoints.size();
     }
@@ -75,6 +90,7 @@ void setup() {
     circles.add(newCircle);
     println("New: " + newCircle);
   }
+  computeConflicts();
   
   noLoop();
 }
@@ -82,13 +98,18 @@ void setup() {
 void draw() {
   background(230);
   
-  stroke(3);
   noFill();
   for (Circle circle : circles) {
     for (int i = 0; i < circle.points.size(); i++) {
       Point a = circle.points.get(i);
       Point b = circle.points.get((i+1)%circle.points.size());
-      fill(0);
+
+      Line testLine = new Line(a, b);
+      if (conflictLines.containsKey(testLine)) {
+        stroke(230, 0, 0);
+      } else {
+        stroke(0);
+      }
       line(a.position.x, a.position.y, b.position.x, b.position.y);
     }
     endShape(CLOSE);
@@ -137,6 +158,7 @@ void mouseClicked() {
       selectedPoint = hoverPoint;
     } else {
       swapCircles(selectedPoint, hoverPoint);
+      computeConflicts();
       selectedPoint = null;
     }
   } else if (selectedPoint != null) {
@@ -154,4 +176,29 @@ void swapCircles(Point a, Point b) {
   circleB.points.set(indexB, a);
   a.circle = circleB;
   b.circle = circleA;
+}
+
+void computeConflicts() {
+  conflictLines = new HashMap<Line, Object>();
+  
+  ArrayList<Line> allLines = new ArrayList<Line>();
+  for (Circle circle : circles) {
+    for (int i = 0; i < circle.points.size(); i++) {
+      Point a = circle.points.get(i);
+      Point b = circle.points.get((i+1) % circle.points.size());
+      Line newLine = new Line(a, b);
+      allLines.add(newLine);
+    }
+  }
+  
+  for (int i = 0; i < allLines.size(); i++) {
+    for (int j = i + 1; j < allLines.size(); j++) {
+      Line l1 = allLines.get(i);
+      Line l2 = allLines.get(j);
+      if (l1.crosses(l2)) {
+        conflictLines.put(l1, null);
+        conflictLines.put(l2, null);
+      }
+    }
+  }
 }
