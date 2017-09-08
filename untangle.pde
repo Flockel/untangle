@@ -3,6 +3,7 @@ final float RADIUS = 24;
 final int C_BLACK = color(20);
 final int C_WHITE = color(230);
 final int C_GREY = color(200);
+final int C_BLUE = color(0, 0, 255);
 final int C_CONFLICT_LINE = color(230, 0, 0);
 final int C_NO_CONFLICTS = color(179, 251, 131);
 
@@ -19,10 +20,12 @@ void setup() {
   size(1000, 1000, P2D);
   smooth(8);
   
+  textMode(SHAPE);
+  
   gameInit();
   
   buttons = new ArrayList<Button>();
-  buttons.add(new Button("Restart/Next round", 5, 5, color(0, 0, 255)) {
+  buttons.add(new Button("Restart/Next round", 15, 15, C_BLUE) {
     public void clicked() {
       gameInit();
     }
@@ -70,6 +73,7 @@ void gameInit() {
 
 void draw() {
   background(C_GREY);
+
   noStroke();
   fill(C_WHITE);
   rect(75, 75, 850, 850);
@@ -77,6 +81,7 @@ void draw() {
   for (Circle circle : circles) {
     if (circle.hasConflicts) {
       noFill();
+      strokeWeight(2);
       for (int i = 0; i < circle.points.size(); i++) {
         Point a = circle.points.get(i);
         Point b = circle.points.get((i+1)%circle.points.size());
@@ -92,6 +97,7 @@ void draw() {
     } else {
       fill(C_NO_CONFLICTS);
       stroke(C_BLACK);
+      strokeWeight(2);
       beginShape();
       for (Point point : circle.points) {
         vertex(point.position.x, point.position.y);
@@ -100,12 +106,14 @@ void draw() {
     }
   }
 
-  noStroke();
   for (Circle circle : circles) {
     for (Point point : circle.points) {
       if (point == hoverPoint && !finished) {
-        fill(200);
+        strokeWeight(5);
+        stroke(200);
+        fill(100);
       } else {
+        noStroke();
         fill(100);
       }
       ellipse(point.position.x, point.position.y, RADIUS*2, RADIUS*2);
@@ -129,6 +137,11 @@ void draw() {
   for (Button button : buttons) {
     button.draw();
   }
+  
+  textSize(32);
+  textAlign(RIGHT, BOTTOM);
+  fill(C_WHITE);
+  text("Florian Keller 2017", 980, 980);
 }
 
 void mouseMoved() {
