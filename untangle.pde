@@ -15,6 +15,7 @@ Point selectedPoint = null;
 HashMap<Line, Object> conflictLines;
 ArrayList<Button> buttons;
 boolean finished;
+java.util.Locale LOCALE = null; // default Locale
 
 void setup() {
   size(1000, 1000, P2D);
@@ -25,7 +26,7 @@ void setup() {
   gameInit();
   
   buttons = new ArrayList<Button>();
-  buttons.add(new Button("Restart/Next round", 15, 15, C_BLUE) {
+  buttons.add(new Button(Texts.getText(LOCALE, "restart"), 15, 15, C_BLUE) {
     public void clicked() {
       gameInit();
     }
@@ -131,7 +132,7 @@ void draw() {
     textSize(64);
     textAlign(CENTER, CENTER);
     fill(0);
-    text("CONGRATULATIONS", 500, 500);
+    text(Texts.getText(LOCALE, "finished"), 500, 500);
   }
   
   for (Button button : buttons) {
